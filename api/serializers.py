@@ -26,7 +26,11 @@ class MovieBaseSerializer(serializers.ModelSerializer):
 
 
 class GenreSerializer(GenreListSerializer):
-    movies = MovieBaseSerializer(source='movie_set', many=True)
+    movies = serializers.SerializerMethodField()
+
+    def get_movies(self, obj):
+        queryset = obj.movie_set.order_by('-score')[:5]
+        return MovieBaseSerializer(self.context, many=True).to_representation(queryset)
 
     class Meta(GenreListSerializer.Meta):
         fields = GenreListSerializer.Meta.fields + ['movies']
@@ -60,7 +64,11 @@ class MovieSerializer(MovieBaseSerializer):
 
 
 class PersonSerializer(serializers.ModelSerializer):
-    movies = MovieBaseSerializer(many=True)
+    movies = serializers.SerializerMethodField()
+
+    def get_movies(self, obj):
+        queryset = obj.movies.order_by('-score')[:5]
+        return MovieBaseSerializer(self.context, many=True).to_representation(queryset)
 
     class Meta:
         model = Person
