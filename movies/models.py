@@ -34,8 +34,8 @@ class Movie(TimeStampMixin):
     duration = models.TimeField(verbose_name='Duration')
     genres = models.ManyToManyField(Genre, verbose_name='Genres')
     cover = models.URLField(verbose_name='Cover')
-    directors = models.ManyToManyField(Person, related_name='+', verbose_name='Directors')
-    actors = models.ManyToManyField(Person, related_name='+', verbose_name='Actors')
+    directors = models.ManyToManyField(Person, related_name='movies_directed', verbose_name='Directors')
+    actors = models.ManyToManyField(Person, related_name='movies', verbose_name='Actors')
 
     def __str__(self):
         return self.title
