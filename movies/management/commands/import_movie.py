@@ -59,8 +59,8 @@ class Command(BaseCommand):
         duration = self.get_duration(subtext.find('time').get_text().strip())
         genres = [genre.get_text() for genre in subtext.find_all('a')][:-1]
         cover = soup.find('div', class_='poster').find('img')['src']
-        directors = [(director.get_text(), self.get_person_id(director['href'])) for director in summary_items[0].find_all('a')]
-        actors = [(actor.get_text(), self.get_person_id(actor['href'])) for actor in summary_items[2].find_all('a')[:-1]]
+        directors = [(director.get_text(), self.get_person_id(director['href'])) for director in summary_items[0].find_all('a') if not 'credit' in director.get_text()]
+        actors = [(actor.get_text(), self.get_person_id(actor['href'])) for actor in summary_items[2].find_all('a') if not 'full' in actor.get_text()]
 
         movie, _ = Movie.objects.get_or_create(
             external_id=external_id,
@@ -112,9 +112,10 @@ class Command(BaseCommand):
         return title, year
 
     def get_duration(self, duration):
-        duration = re.match('((?P<hour>\d+)h)?\s?(?P<minutes>\d+)min', duration)
-        hour, minutes = duration.group('hour'), int(duration.group('minutes'))
+        duration = re.match('((?P<hour>\d+)h)?\s?((?P<minutes>\d+)min)?', duration)
+        hour, minutes = duration.group('hour'), duration.group('minutes')
         hour = int(hour) if hour else 0
+        minutes = int(minutes) if minutes else 0
 
         return time(hour, minutes)
 
