@@ -4,31 +4,17 @@ from movies.models import Movie, Person
 from rest_framework import filters, viewsets
 from rest_framework.response import Response
 
-from .filters import MovieOrderingFilter
+from .filters import MinLengthSearchFilter, MovieOrderingFilter
 from .serializers import (MovieListSerializer, MovieSerializer,
                           PersonListSerializer, PersonSerializer)
 
 
 class MovieViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Movie.objects.all()
-    filter_backends = [MovieOrderingFilter]
-    ordering_fields = ['title', 'score', 'year', 'duration']
+    filter_backends = [MinLengthSearchFilter, MovieOrderingFilter]
+    ordering_fields = ['title', 'score', 'year']
     ordering = ['-score', 'title']
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-
-        if self.action == 'retrieve':
-            return queryset
-
-        q = self.request.query_params.get('q', None)
-        if q:
-            if len(q) < 3:
-                return queryset.none()
-            queryset = queryset.filter(Q(title__icontains=q) | Q(external_id=q))
-            return queryset
-
-        return queryset
+    search_fields = ['title', '=external_id']
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
@@ -39,24 +25,10 @@ class MovieViewSet(viewsets.ReadOnlyModelViewSet):
 
 class PersonViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Person.objects.all()
-    filter_backends = [filters.OrderingFilter]
+    filter_backends = [MinLengthSearchFilter, filters.OrderingFilter]
     ordering_fields = ['name']
     ordering = ['name']
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-
-        if self.action == 'retrieve':
-            return queryset
-        
-        q = self.request.query_params.get('q', None)
-        if q:
-            if len(q) < 3:
-                return queryset.none()
-            queryset = queryset.filter(name__icontains=q)
-            return queryset
-        
-        return queryset.none()
+    search_fields = ['name']
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
