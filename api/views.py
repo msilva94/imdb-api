@@ -1,11 +1,12 @@
 from django.db.models import Q
 from django.shortcuts import render
-from movies.models import Movie, Person
+from movies.models import Genre, Movie, Person
 from rest_framework import filters, viewsets
 from rest_framework.response import Response
 
 from .filters import MinLengthSearchFilter, MovieOrderingFilter
-from .serializers import (MovieListSerializer, MovieSerializer,
+from .serializers import (GenreListSerializer, GenreSerializer,
+                          MovieListSerializer, MovieSerializer,
                           PersonListSerializer, PersonSerializer)
 
 
@@ -35,3 +36,17 @@ class PersonViewSet(viewsets.ReadOnlyModelViewSet):
             return PersonSerializer
 
         return PersonListSerializer
+
+
+class GenreViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Genre.objects.all()
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    ordering_fields = ['name']
+    ordering = ['name']
+    search_fields = ['name']
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return GenreSerializer
+
+        return GenreListSerializer

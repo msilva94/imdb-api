@@ -10,11 +10,12 @@ class DurationSerializer(serializers.Serializer):
         fields = ['hours' ,'minutes']
 
 
-class GenreSerializer(serializers.ModelSerializer):
+class GenreListSerializer(serializers.ModelSerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='genre-detail')
 
     class Meta:
         model = Genre
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'url']
 
 
 class MovieBaseSerializer(serializers.ModelSerializer):
@@ -22,6 +23,13 @@ class MovieBaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
         fields = ['id', 'title']
+
+
+class GenreSerializer(GenreListSerializer):
+    movies = MovieBaseSerializer(source='movie_set', many=True)
+
+    class Meta(GenreListSerializer.Meta):
+        fields = GenreListSerializer.Meta.fields + ['movies']
 
 
 class MovieListSerializer(MovieBaseSerializer):
@@ -42,7 +50,7 @@ class PersonListSerializer(serializers.ModelSerializer):
 
 class MovieSerializer(MovieBaseSerializer):
     duration = DurationSerializer()
-    genres = GenreSerializer(many=True)
+    genres = GenreListSerializer(many=True)
     directors = PersonListSerializer(many=True)
     actors = PersonListSerializer(many=True)
 
