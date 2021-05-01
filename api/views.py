@@ -18,8 +18,9 @@ class MovieViewSet(viewsets.ReadOnlyModelViewSet):
             return queryset
 
         q = self.request.query_params.get('q', None)
-
         if q:
+            if len(q) < 3:
+                return queryset.none()
             queryset = queryset.filter(Q(title__icontains=q) | Q(external_id=q))
             return queryset
 
@@ -42,8 +43,9 @@ class PersonViewSet(viewsets.ReadOnlyModelViewSet):
             return queryset
         
         q = self.request.query_params.get('q', None)
-
         if q:
+            if len(q) < 3:
+                return queryset.none()
             queryset = queryset.filter(name__icontains=q)
             return queryset
         
