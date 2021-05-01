@@ -5,7 +5,8 @@ from .models import Genre, Movie, Person
 
 @admin.register(Movie)
 class MovieAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('title', 'score', 'year')
+    search_fields = ('title',)
 
 @admin.register(Genre)
 class GenreAdmin(admin.ModelAdmin):
