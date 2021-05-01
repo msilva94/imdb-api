@@ -23,7 +23,7 @@ class MovieViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(Q(title__icontains=q) | Q(external_id=q))
             return queryset
 
-        return queryset.none()
+        return queryset.order_by('-score')
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
