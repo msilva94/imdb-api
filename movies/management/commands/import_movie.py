@@ -28,6 +28,11 @@ class Command(BaseCommand):
         if not re.match('tt\d+', external_id):
             raise CommandError('Invalid IMDb ID')
 
+        try:
+            return Movie.objects.get(external_id=external_id).title
+        except Movie.DoesNotExist:
+            pass
+
         movie_url = f'{IMDB_MOVIE_URL}{external_id}/'
 
         http = urllib3.PoolManager()
@@ -56,8 +61,6 @@ class Command(BaseCommand):
         cover = soup.find('div', class_='poster').find('img')['src']
         directors = [(director.get_text(), self.get_person_id(director['href'])) for director in summary_items[0].find_all('a')]
         actors = [(actor.get_text(), self.get_person_id(actor['href'])) for actor in summary_items[2].find_all('a')[:-1]]
-
-        print(title)
 
         movie, _ = Movie.objects.get_or_create(
             external_id=external_id,
@@ -95,7 +98,7 @@ class Command(BaseCommand):
             )
             movie.actors.add(actor)
 
-        return
+        return title
 
     def get_title_year(self, title):
         year = None
