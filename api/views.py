@@ -4,12 +4,16 @@ from movies.models import Movie, Person
 from rest_framework import viewsets
 from rest_framework.response import Response
 
+from .filters import MovieOrderingFilter
 from .serializers import (MovieListSerializer, MovieSerializer,
                           PersonListSerializer, PersonSerializer)
 
 
 class MovieViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Movie.objects.all().order_by('-score')
+    queryset = Movie.objects.all()
+    filter_backends = [MovieOrderingFilter]
+    ordering_fields = ['title', 'score', 'year', 'duration']
+    ordering = ['-score', 'title']
 
     def get_queryset(self):
         queryset = super().get_queryset()
