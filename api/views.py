@@ -9,7 +9,7 @@ from .serializers import (MovieListSerializer, MovieSerializer,
 
 
 class MovieViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Movie.objects.all()
+    queryset = Movie.objects.all().order_by('-score')
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -24,7 +24,7 @@ class MovieViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(Q(title__icontains=q) | Q(external_id=q))
             return queryset
 
-        return queryset.order_by('-score')
+        return queryset
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
