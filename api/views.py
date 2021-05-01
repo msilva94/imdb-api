@@ -1,7 +1,7 @@
 from django.db.models import Q
 from django.shortcuts import render
 from movies.models import Movie, Person
-from rest_framework import viewsets
+from rest_framework import filters, viewsets
 from rest_framework.response import Response
 
 from .filters import MovieOrderingFilter
@@ -39,6 +39,9 @@ class MovieViewSet(viewsets.ReadOnlyModelViewSet):
 
 class PersonViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Person.objects.all()
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['name']
+    ordering = ['name']
 
     def get_queryset(self):
         queryset = super().get_queryset()
