@@ -12,14 +12,20 @@ from .models import Genre, ImportMovie, Movie, Person
 class MovieAdmin(admin.ModelAdmin):
     list_display = ('title', 'score', 'year')
     search_fields = ('title',)
+    autocomplete_fields = ('genres', 'directors', 'actors',)
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
 
 @admin.register(Genre)
 class GenreAdmin(admin.ModelAdmin):
-    pass
+    search_fields = ('name',)
+
 
 @admin.register(Person)
 class PersonAdmin(admin.ModelAdmin):
-    pass
+    search_fields = ('name',)
 
 
 @admin.register(ImportMovie)
