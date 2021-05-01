@@ -43,3 +43,10 @@ class Movie(TimeStampMixin):
     class Meta:
         verbose_name = 'Movie'
         verbose_name_plural = 'Movies'
+
+
+class ImportMovie(models.Model):
+
+    class Meta:
+        verbose_name = 'Import Movie'
+        verbose_name_plural = 'Import Movie'
