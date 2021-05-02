@@ -64,7 +64,7 @@ class PersonSerializer(serializers.ModelSerializer):
     movies = serializers.SerializerMethodField()
 
     def get_movies(self, obj):
-        queryset = obj.movies.order_by('-score')[:5]
+        queryset = obj.movies.all().union(obj.movies_directed.all()).order_by('-score')[:5]
         return MovieBaseSerializer(self.context, many=True).to_representation(queryset)
 
     class Meta:
