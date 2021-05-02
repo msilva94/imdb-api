@@ -23,6 +23,17 @@ class MovieViewSet(viewsets.ReadOnlyModelViewSet):
 
         return MovieListSerializer
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        genre = self.request.query_params.get('genre', '')
+        genre = genre.replace(',', ' ')
+        genre = genre.split()
+        if genre:
+            queryset = queryset.filter(genres__id__in=genre)
+
+        return queryset
+
 
 class PersonViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Person.objects.all()
