@@ -30,7 +30,7 @@ class MovieViewSet(viewsets.ReadOnlyModelViewSet):
         genre = genre.replace(',', ' ')
         genre = genre.split()
         if genre:
-            queryset = queryset.filter(genres__id__in=genre)
+            queryset = queryset.filter(genres__id__in=genre).distinct()
 
         return queryset
 
