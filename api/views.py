@@ -15,7 +15,7 @@ class MovieViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [MinLengthSearchFilter, MovieOrderingFilter]
     ordering_fields = ['title', 'score', 'year']
     ordering = ['-score', 'title']
-    search_fields = ['title', '=external_id']
+    search_fields = ['title', '=external_id', 'directors__name', 'actors__name']
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
