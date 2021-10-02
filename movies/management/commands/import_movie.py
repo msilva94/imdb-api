@@ -7,8 +7,8 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from movies.models import Genre, Movie, Person
 
-IMDB_BASE_URL = 'https://imdb.com/'
-IMDB_MOVIE_URL = f'{IMDB_BASE_URL}title/'
+IMDB_BASE_URL = 'https://imdb.com'
+IMDB_MOVIE_URL = f'{IMDB_BASE_URL}/title/'
 
 
 class Command(BaseCommand):
@@ -35,32 +35,28 @@ class Command(BaseCommand):
 
         movie_url = f'{IMDB_MOVIE_URL}{external_id}/'
 
-        http = urllib3.PoolManager()
-        request = http.request(
-            'GET',
-            movie_url,
-            headers={
-                'Accept-Language': 'en-US,en',
-            }
-        )
-
+        request = self.get_page(movie_url)
         if not request.status == 200:
             raise CommandError('Movie not found')
 
         soup = BeautifulSoup(request.data, 'html.parser')
 
-        title_wrapper = soup.find('div', class_='title_wrapper')
-        subtext = title_wrapper.find('div', class_='subtext')
-        summary_items = soup.find_all('div', class_='credit_summary_item')
+        header_section = soup.find('section', class_='ipc-page-section')
+        title = header_section.find('h1').get_text()
+        year_duration_wrapper = header_section.find('ul').find_all('li')
+        year, duration = year_duration_wrapper[0].find('a').get_text(), self.get_duration(year_duration_wrapper[2].get_text())
+        score = header_section.find('div', class_='ipc-button__text').find('span').get_text()
+        synopsis = soup.find('span', class_='gCtawA').get_text()
+        genres = [genre.get_text() for genre in soup.find('div', class_='gtBDBL').find_all('a')]
 
-        title, year = self.get_title_year(title_wrapper.find('h1').get_text())
-        score = soup.find('span', itemprop='ratingValue').get_text()
-        synopsis = soup.find('div', class_='summary_text').get_text().strip()
-        duration = self.get_duration(subtext.find('time').get_text().strip())
-        genres = [genre.get_text() for genre in subtext.find_all('a')][:-1]
-        cover = soup.find('div', class_='poster').find('img')['src']
-        directors = [(director.get_text(), self.get_person_id(director['href'])) for director in summary_items[0].find_all('a') if not 'credit' in director.get_text()]
-        actors = [(actor.get_text(), self.get_person_id(actor['href'])) for actor in summary_items[2].find_all('a') if not 'full' in actor.get_text()]
+        persons_wrapper = soup.find('ul', class_='ipc-metadata-list').find_all('li', class_='ipc-metadata-list__item')
+        directors = [(director.get_text(), self.get_person_id(director['href'])) for director in persons_wrapper[0].find_all('a') if not 'full' in director['href']]
+        actors = [(actor.get_text(), self.get_person_id(actor['href'])) for actor in persons_wrapper[2].find_all('a') if not 'full' in actor['href']]
+
+        cover_url = f"{IMDB_BASE_URL}{soup.find('a', class_='ipc-lockup-overlay')['href']}"
+        request = self.get_page(cover_url)
+        soup = BeautifulSoup(request.data, 'html.parser')
+        cover = soup.find('img', class_='bnaOri')['src']
 
         movie, _ = Movie.objects.get_or_create(
             external_id=external_id,
@@ -121,3 +117,14 @@ class Command(BaseCommand):
 
     def get_person_id(self, person):
         return re.search('nm\d+', person).group(0)
+
+    def get_page(self, url):
+        http = urllib3.PoolManager()
+        request = http.request(
+            'GET',
+            url,
+            headers={
+                'Accept-Language': 'en-US,en',
+            }
+        )
+        return request
